@@ -1,4 +1,4 @@
-OBJS=main.o tty.o
+OBJS=main.o tty.o common.o
 EXECUTABLE=edit
 
 CFLAGS=-g -Wall -Werror

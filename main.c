@@ -5,33 +5,24 @@
 
 #include "tty.h"
 
-const char* ED2 = "\x1b[2J";
-const char* HVHOME = "\x1b[f";
-
 void reset_termios() {
-  revert_terminal_mode(STDOUT_FILENO);
-}
-
-void fail(char* reason) {
-  perror(reason);
-
-  reset_termios();
-  exit(EXIT_FAILURE);
+    revert_term_mode(STDOUT_FILENO);
 }
 
 int main(int argc, char* argv[]) {
   /* Set terminal in raw mode */
-  enable_raw_mode(STDOUT_FILENO);
-  atexit(reset_termios);
+    update_term_size(STDOUT_FILENO);
+    enable_raw_mode(STDOUT_FILENO);
+    atexit(reset_termios);
 
-  write(STDOUT_FILENO, ED2, 4);
-  write(STDOUT_FILENO, HVHOME, 3);
+    clear_term(STDOUT_FILENO);
+    cursor_top_left(STDOUT_FILENO);
 
-  char c;
-  while (read(STDOUT_FILENO, &c, 1) == 1 && c != '\x11') {
-    write(STDOUT_FILENO, HVHOME, 3);
-    write(STDOUT_FILENO, &c, 1);
-  }
+    for (int i = 0; i < TERM_HEIGHT; i++) {
+	write(STDOUT_FILENO, "~", 1);
+	move_cursor(STDOUT_FILENO, CUR_DOWN, 1);
+	move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
+    }
 
-  return 0;
+    return 0;
 }
