@@ -50,7 +50,8 @@ void gbuf_expand(struct gbuf* gbuf) {
     }
 
     memmove(gbuf->contents + (newsize - gbuf->gap_end),
-	    gbuf->contents + gbuf->gap_end, gbuf->size - gbuf->gap_end);
+	    gbuf->contents + gbuf->gap_end,
+	    (gbuf->size - gbuf->gap_end) * sizeof(char));
     gbuf->gap_end = newsize - gbuf->gap_end;
 
     gbuf->size = newsize;
@@ -65,9 +66,43 @@ void gbuf_insert_char(struct gbuf* gbuf, char c) {
     gbuf->contents[gbuf->gap_begin++] = c;
 }
 
+void gbuf_delete_char(struct gbuf* gbuf) {
+    gbuf->gap_begin--;
+}
+
 uint64_t gbuf_content_size(struct gbuf* gbuf) {
     return gbuf->size - (gbuf->gap_end - gbuf->gap_begin);
 }
 
-void gbuf_move_cursor(struct gbuf* gbuf, int64_t dist) {
+int64_t gbuf_move_cursor(struct gbuf* gbuf, int64_t dist) {
+    if (!dist) {
+	/* Moving zero characters is a noop. */
+	return 0;
+    }
+
+    /* Clamp the move distance. */
+    if (gbuf->gap_begin + dist < 0) {
+	dist = -gbuf->gap_begin;
+    } else if (gbuf->gap_end + dist >= gbuf->size) {
+	dist = gbuf->size - gbuf->gap_end;
+    }
+
+    int new_begin = gbuf->gap_begin + dist,
+	new_end   = gbuf->gap_end   + dist;
+    uint32_t abs_dist = dist < 0 ? -dist : dist;
+
+    if (dist > 0) {
+	memmove(gbuf->contents + gbuf->gap_begin,
+		gbuf->contents + new_end,
+		abs_dist * sizeof(char));
+    } else {
+	memmove(gbuf->contents + gbuf->gap_end,
+		gbuf->contents + new_begin,
+		abs_dist * sizeof(char));
+    }
+
+    gbuf->gap_begin = new_begin;
+    gbuf->gap_end   = new_end;
+
+    return dist;
 }
