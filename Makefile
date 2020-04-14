@@ -1,4 +1,4 @@
-OBJS=main.o tty.o common.o
+OBJS=main.o tty.o common.o gapbuffer.o
 EXECUTABLE=edit
 
 CFLAGS=-g -Wall -Werror
