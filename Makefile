@@ -1,5 +1,5 @@
 OBJS=main.o tty.o common.o gapbuffer.o
-EXECUTABLE=edit
+EXECUTABLE=iv
 
 CFLAGS=-g -Wall -Werror
 
