@@ -33,14 +33,23 @@ int main(int argc, char* argv[]) {
 
     char keypress;
     while (read(STDOUT_FILENO, &keypress, 1) == 1) {
+	/* TODO: We really gotta fix rendering updates. */
 	if (keypress == 0x11) { /* ^Q */
 	    break;
 	} else if (keypress == 0x7f) { /* DEL */
 	    gbuf_delete_char(&active_buffer);
+	    move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
+	    write(STDOUT_FILENO, " ", 1);
+	    move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
 	} else {
 	    cursor_top_left(STDOUT_FILENO);
 	    gbuf_insert_char(&active_buffer, keypress);
-	    write(STDOUT_FILENO, active_buffer.contents, active_buffer.size);
+	    write(STDOUT_FILENO,
+		  active_buffer.contents,
+		  active_buffer.gap_begin);
+	    write(STDOUT_FILENO,
+		  active_buffer.contents + active_buffer.gap_end,
+		  active_buffer.size - active_buffer.gap_end);
 	}
     }
 
