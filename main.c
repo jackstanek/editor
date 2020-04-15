@@ -1,8 +1,12 @@
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
+#include "common.h"
 #include "gapbuffer.h"
 #include "tty.h"
 
@@ -19,6 +23,36 @@ int main(int argc, char* argv[]) {
     clear_term(STDOUT_FILENO);
     cursor_top_left(STDOUT_FILENO);
 
+    /* Allow writing to stdout */
+    struct gbuf active_buffer;
+    if (argc == 2) {
+	int fd = open(argv[1], O_RDWR);
+	if (fd < 0) {
+	    fail("open");
+	}
+
+	struct stat file_info;
+	int rv = fstat(fd, &file_info);
+	if (rv < 0) {
+	    fail("fstat");
+	}
+
+	char* file_contents = calloc(file_info.st_size, sizeof(char));
+	if (!file_contents) {
+	    fail("calloc");
+	}
+
+	if (read(fd, file_contents, file_info.st_size) != file_info.st_size) {
+	    fail("read");
+	}
+
+	gbuf_init_with_content(&active_buffer, file_info.st_size,
+			       file_contents);
+	free(file_contents);
+    } else {
+	gbuf_init(&active_buffer);
+    }
+
     /* Draw tildes on the side */
     for (int i = 0; i < TERM_HEIGHT; i++) {
 	write(STDOUT_FILENO, "~", 1);
@@ -26,10 +60,6 @@ int main(int argc, char* argv[]) {
 	move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
     }
     cursor_top_left(STDOUT_FILENO);
-
-    /* Allow writing to stdout */
-    struct gbuf active_buffer;
-    gbuf_init(&active_buffer);
 
     char keypress;
     while (read(STDOUT_FILENO, &keypress, 1) == 1) {
