@@ -67,7 +67,9 @@ void gbuf_insert_char(struct gbuf* gbuf, char c) {
 }
 
 void gbuf_delete_char(struct gbuf* gbuf) {
-    gbuf->gap_begin--;
+    if (gbuf->gap_begin > 0) {
+	gbuf->gap_begin--;
+    }
 }
 
 uint64_t gbuf_content_size(struct gbuf* gbuf) {

@@ -3,6 +3,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "gapbuffer.h"
 #include "tty.h"
 
 void reset_termios() {
@@ -10,7 +11,7 @@ void reset_termios() {
 }
 
 int main(int argc, char* argv[]) {
-  /* Set terminal in raw mode */
+    /* Set terminal in raw mode */
     update_term_size(STDOUT_FILENO);
     enable_raw_mode(STDOUT_FILENO);
     atexit(reset_termios);
@@ -27,9 +28,20 @@ int main(int argc, char* argv[]) {
     cursor_top_left(STDOUT_FILENO);
 
     /* Allow writing to stdout */
-    char c;
-    while (read(STDOUT_FILENO, &c, 1) == 1 && c != 0x11) {
-	write(STDOUT_FILENO, &c, 1);
+    struct gbuf active_buffer;
+    gbuf_init(&active_buffer);
+
+    char keypress;
+    while (read(STDOUT_FILENO, &keypress, 1) == 1) {
+	if (keypress == 0x11) { /* ^Q */
+	    break;
+	} else if (keypress == 0x7f) { /* DEL */
+	    gbuf_delete_char(&active_buffer);
+	} else {
+	    cursor_top_left(STDOUT_FILENO);
+	    gbuf_insert_char(&active_buffer, keypress);
+	    write(STDOUT_FILENO, active_buffer.contents, active_buffer.size);
+	}
     }
 
     return 0;
