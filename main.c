@@ -9,6 +9,7 @@
 #include "common.h"
 #include "gapbuffer.h"
 #include "tty.h"
+#include "ui.h"
 
 void reset_termios() {
     revert_term_mode(STDOUT_FILENO);
@@ -68,19 +69,11 @@ int main(int argc, char* argv[]) {
 	    break;
 	} else if (keypress == 0x7f) { /* DEL */
 	    gbuf_delete_char(&active_buffer);
-	    move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
-	    write(STDOUT_FILENO, " ", 1);
-	    move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
 	} else {
-	    cursor_top_left(STDOUT_FILENO);
 	    gbuf_insert_char(&active_buffer, keypress);
-	    write(STDOUT_FILENO,
-		  active_buffer.contents,
-		  active_buffer.gap_begin);
-	    write(STDOUT_FILENO,
-		  active_buffer.contents + active_buffer.gap_end,
-		  active_buffer.size - active_buffer.gap_end);
 	}
+
+	refresh_display(STDOUT_FILENO, &active_buffer);
     }
 
     return 0;

@@ -1,6 +1,8 @@
 #ifndef UI_H
 #define UI_H
 
-int refresh_display(int fd);
+#include "gapbuffer.h"
+
+int refresh_display(int fd, struct gbuf* gbuf);
 
 #endif
