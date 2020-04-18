@@ -7,6 +7,8 @@ struct gbuf {
     uint64_t size;
     uint64_t gap_begin;
     uint64_t gap_end;
+    uint32_t lineno;
+    uint32_t colno;
     char* contents;
 };
 

@@ -76,33 +76,13 @@ void cursor_top_left(int fd) {
     write(fd, HVHOME, 3);
 }
 
-/* Write value as as string to output.
- * Returns how many digits were converted. */
-int fast_atoi(uint8_t value, char* output) {
-    uint8_t count = 0;
-    while (value > 0) {
-	output[count] = '0' + value % 10;
-	value /= 10;
-	count++;
-    }
-
-    /* Reverse the string. */
-    for (int i = 0; i < count / 2; i++) {
-	char tmp;
-	tmp = output[i];
-	output[i] = output[count - i - 1];
-	output[count - i - 1] = tmp;
-    }
-    return count;
-}
-
 /**
  * Move the cursor in the specified direction for distance positions.
  */
 void move_cursor(int fd, int direction, uint8_t distance) {
     int num_chars_to_write = 3; /* ESC, [, and direction. */
     char cmdbuf[6] = "\x1b[0000";
-    int digits_len = fast_atoi(distance, &cmdbuf[2]);
+    int digits_len = fast_itoa(distance, &cmdbuf[2]);
     num_chars_to_write += digits_len;
     cmdbuf[digits_len + 2] = 'A' + direction; /* set the direction, i.e. the last
 						 letter of the command. */
