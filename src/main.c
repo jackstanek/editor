@@ -6,45 +6,29 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "common.h"
 #include "gapbuffer.h"
-#include "tty.h"
-#include "ui.h"
-
-void reset_termios() {
-    revert_term_mode(STDOUT_FILENO);
-}
 
 int main(int argc, char* argv[]) {
-    /* Set terminal in raw mode */
-    update_term_size(STDOUT_FILENO);
-    enable_raw_mode(STDOUT_FILENO);
-    atexit(reset_termios);
-
-    clear_term(STDOUT_FILENO);
-    cursor_top_left(STDOUT_FILENO);
-
-    /* Allow writing to stdout */
     struct gbuf active_buffer;
     if (argc == 2) {
 	int fd = open(argv[1], O_RDWR);
 	if (fd < 0) {
-	    fail("open");
+	    perror("open");
 	}
 
 	struct stat file_info;
 	int rv = fstat(fd, &file_info);
 	if (rv < 0) {
-	    fail("fstat");
+	    perror("fstat");
 	}
 
 	char* file_contents = calloc(file_info.st_size, sizeof(char));
 	if (!file_contents) {
-	    fail("calloc");
+	    perror("calloc");
 	}
 
 	if (read(fd, file_contents, file_info.st_size) != file_info.st_size) {
-	    fail("read");
+	    perror("read");
 	}
 
 	gbuf_init_with_content(&active_buffer, file_info.st_size,
@@ -53,14 +37,6 @@ int main(int argc, char* argv[]) {
     } else {
 	gbuf_init(&active_buffer);
     }
-
-    /* Draw tildes on the side */
-    for (int i = 0; i < TERM_HEIGHT; i++) {
-	write(STDOUT_FILENO, "~", 1);
-	move_cursor(STDOUT_FILENO, CUR_DOWN, 1);
-	move_cursor(STDOUT_FILENO, CUR_LEFT, 1);
-    }
-    cursor_top_left(STDOUT_FILENO);
 
     char keypress;
     while (read(STDOUT_FILENO, &keypress, 1) == 1) {
@@ -72,8 +48,6 @@ int main(int argc, char* argv[]) {
 	} else {
 	    gbuf_insert_char(&active_buffer, keypress);
 	}
-
-	refresh_display(STDOUT_FILENO, &active_buffer);
     }
 
     return 0;

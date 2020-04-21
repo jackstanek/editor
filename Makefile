@@ -1,17 +1,24 @@
-OBJS=common.o gapbuffer.o main.o tty.o ui.o
 EXECUTABLE=iv
 
+SRCDIR=src
+OBJDIR=build
+OBJS=$(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.c))
+
 CFLAGS=-g -Wall -Werror
+LDFLAGS=-lncurses
 
-all: $(EXECUTABLE)
+$(OBJDIR)/$(EXECUTABLE): $(OBJDIR) $(OBJS)
+	$(CC) $(LDFLAGS) -o $(OBJDIR)/$(EXECUTABLE) $(OBJS)
 
-$(EXECUTABLE): $(OBJS) Makefile
-	$(CC) -o $(EXECUTABLE) $(OBJS)
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
-TEST_GBUF_OBJS=test_gbuf.o gapbuffer.o common.o tty.o
-test_gbuf: $(TEST_GBUF_OBJS)
-	$(CC) -o test_gbuf $(TEST_GBUF_OBJS)
-	./test_gbuf
+$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $(OBJDIR)/$(@F)
 
+.PHONY: clean run
 clean:
-	rm -f *.o $(EXECUTABLE)
+	$(RM) -r $(OBJDIR)
+
+run: $(OBJDIR)/$(EXECUTABLE)
+	$(OBJDIR)/$(EXECUTABLE)

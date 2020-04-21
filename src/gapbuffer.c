@@ -1,8 +1,8 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
 #include "gapbuffer.h"
 
 const uint64_t INIT_GAP_SIZE = 1 << 8;
@@ -50,7 +50,7 @@ int gbuf_init(struct gbuf* gbuf) {
 
     gbuf->contents = calloc(INIT_GAP_SIZE, sizeof(char));
     if (!gbuf->contents) {
-	fail("gbuf_init (empty)");
+	perror("gbuf_init (empty)");
     }
 
     return 0;
@@ -71,7 +71,7 @@ int gbuf_init_with_content(struct gbuf* gbuf, uint64_t size,
 
     gbuf->contents = calloc(gbuf->size, sizeof(char));
     if (!gbuf->contents) {
-	fail("gbuf_init (content)");
+	perror("gbuf_init (content)");
 	return 1;
     }
 
@@ -83,7 +83,7 @@ void gbuf_expand(struct gbuf* gbuf) {
     uint64_t newsize = gbuf->size * 2;
     gbuf->contents = reallocarray(gbuf->contents, newsize, sizeof(char));
     if (!gbuf->contents) {
-	fail("gbuf_expand");
+	perror("gbuf_expand");
     }
 
     memmove(gbuf->contents + (newsize - gbuf->gap_end),
