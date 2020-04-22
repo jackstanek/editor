@@ -6,6 +6,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <ncurses.h>
+
 #include "gapbuffer.h"
 
 int main(int argc, char* argv[]) {
@@ -38,17 +40,18 @@ int main(int argc, char* argv[]) {
 	gbuf_init(&active_buffer);
     }
 
-    char keypress;
-    while (read(STDOUT_FILENO, &keypress, 1) == 1) {
-	/* TODO: We really gotta fix rendering updates. */
-	if (keypress == 0x11) { /* ^Q */
+    /* initialize ncurses */
+    initscr();
+
+    int c;
+    while (1) {
+	c = getch();
+	if (c == 'q') {
 	    break;
-	} else if (keypress == 0x7f) { /* DEL */
-	    gbuf_delete_char(&active_buffer);
-	} else {
-	    gbuf_insert_char(&active_buffer, keypress);
 	}
+	refresh();
     }
+    endwin();
 
     return 0;
 }

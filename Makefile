@@ -5,7 +5,7 @@ OBJDIR=build
 OBJS=$(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(wildcard $(SRCDIR)/*.c))
 
 CFLAGS=-g -Wall -Werror
-LDFLAGS=-lncurses
+LDFLAGS=-lncurses -ltinfo
 
 $(OBJDIR)/$(EXECUTABLE): $(OBJDIR) $(OBJS)
 	$(CC) $(LDFLAGS) -o $(OBJDIR)/$(EXECUTABLE) $(OBJS)
