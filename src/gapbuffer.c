@@ -79,6 +79,10 @@ int gbuf_init_with_content(struct gbuf* gbuf, uint64_t size,
     return 0;
 }
 
+void gbuf_destroy(struct gbuf* gbuf) {
+    free(gbuf->contents);
+}
+
 void gbuf_expand(struct gbuf* gbuf) {
     uint64_t newsize = gbuf->size * 2;
     gbuf->contents = reallocarray(gbuf->contents, newsize, sizeof(char));

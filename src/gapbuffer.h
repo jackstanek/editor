@@ -14,6 +14,8 @@ struct gbuf {
 
 int gbuf_init(struct gbuf* gbuf);
 int gbuf_init_with_content(struct gbuf* gbuf, uint64_t size, char* init_contents);
+void gbuf_destroy(struct gbuf* gbuf);
+
 void gbuf_expand(struct gbuf* gbuf);
 void gbuf_insert_char(struct gbuf* gbuf, char c);
 void gbuf_delete_char(struct gbuf* gbuf);

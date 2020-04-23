@@ -42,16 +42,16 @@ int main(int argc, char* argv[]) {
 
     /* initialize ncurses */
     initscr();
+    noecho();
 
-    int c;
-    while (1) {
-	c = getch();
-	if (c == 'q') {
-	    break;
-	}
+    char c;
+    while((c = getch()) && c != 0) {
+	gbuf_insert_char(&active_buffer, c);
+	printw(active_buffer.contents);
 	refresh();
     }
     endwin();
+    gbuf_destroy(&active_buffer);
 
     return 0;
 }
